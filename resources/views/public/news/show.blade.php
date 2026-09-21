@@ -1,0 +1,11 @@
+@extends('public.layout')
+@section('content')
+<article class="article-wrap"><header class="article-header"><div class="eyebrow"><span>{{ $news->category?->name ?? 'News' }}</span>@if($news->is_breaking)<span>Breaking</span>@endif</div><h1>{{ $news->headline }}</h1><p class="article-dek">{{ $news->short_description }}</p><div class="article-meta"><span>By {{ $news->author?->name ?? 'Jankatha Desk' }}</span><time datetime="{{ $news->published_at?->toIso8601String() }}">{{ $news->published_at?->format('d M Y, h:i A') }}</time>@if($news->location)<span>{{ collect([$news->location,$news->district,$news->state])->filter()->join(' · ') }}</span>@endif</div></header>
+@if($news->featured_image)<img class="article-image" src="{{ str_starts_with($news->featured_image, 'http') || str_starts_with($news->featured_image, '/') ? $news->featured_image : asset('storage/'.$news->featured_image) }}" alt="{{ $news->headline }}" loading="eager">@endif
+@if($safeVideoUrl)<div class="article-media"><p class="section-kicker">VIDEO REPORT</p>@if(str_starts_with($safeVideoUrl, '/storage/'))<video class="article-video" controls preload="metadata"><source src="{{ $safeVideoUrl }}"></video>@else<iframe class="article-video" src="{{ $safeVideoUrl }}" title="{{ $news->headline }}" loading="lazy" allowfullscreen></iframe>@endif</div>@endif
+<div class="article-content">{!! $news->content !!}</div>
+@if($news->tags)<div class="tag-list">@foreach(explode(',', $news->tags) as $tag)<span class="tag">#{{ trim($tag) }}</span>@endforeach</div>@endif
+<div class="article-share"><p class="section-kicker">SHARE THIS STORY</p><a class="text-link" href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode(url()->current()) }}" target="_blank" rel="noopener">Facebook ↗</a> <a class="text-link" href="https://twitter.com/intent/tweet?url={{ urlencode(url()->current()) }}&text={{ urlencode($news->headline) }}" target="_blank" rel="noopener">X ↗</a> <a class="text-link" href="https://wa.me/?text={{ urlencode($news->headline.' '.url()->current()) }}" target="_blank" rel="noopener">WhatsApp ↗</a></div>
+@if($related->isNotEmpty())<section class="content-section"><x-public.section-heading title="Related News"/><div class="news-grid">@foreach($related as $item)<x-public.news-card :news="$item" />@endforeach</div></section>@endif
+</article>
+@endsection

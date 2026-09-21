@@ -1,0 +1,5 @@
+@extends('public.layout')
+@section('content')
+<section class="page-hero"><div class="container"><p class="section-kicker">CATEGORY / {{ strtoupper($category->slug) }}</p><h1>{{ $category->name }}</h1><p>{{ $category->description ?: 'The latest stories from this Jankatha desk.' }}</p></div></section>
+<div class="container listing-layout"><section>@if($featured)<div class="panel-feature"><x-public.news-card :news="$featured" :featured="true"/></div>@endif<h2 class="section-title">Latest {{ $category->name }} news</h2><div class="listing-stack">@forelse($news as $item)<x-public.news-card :news="$item" />@empty<div class="empty-state">No published stories in this category yet.</div>@endforelse</div>{{ $news->links() }}</section><aside class="sidebar"><h2>Latest News</h2>@foreach($sidebarNews as $item)<a class="side-news" href="{{ route('news.show', $item->slug) }}"><span><time>{{ $item->published_at?->diffForHumans() }}</time><h3>{{ $item->headline }}</h3></span></a>@endforeach</aside></div>
+@endsection

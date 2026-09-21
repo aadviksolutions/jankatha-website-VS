@@ -1,0 +1,39 @@
+<?php
+
+namespace App\Policies;
+
+use App\Models\Category;
+use App\Models\User;
+
+class CategoryPolicy
+{
+    public function before(User $user): ?bool
+    {
+        return $user->hasRole('super_admin') ? true : null;
+    }
+
+    public function viewAny(User $user): bool
+    {
+        return $user->hasRole('admin');
+    }
+
+    public function view(User $user, Category $category): bool
+    {
+        return $user->hasRole('admin');
+    }
+
+    public function create(User $user): bool
+    {
+        return $user->hasRole('admin');
+    }
+
+    public function update(User $user, Category $category): bool
+    {
+        return $user->hasRole('admin');
+    }
+
+    public function delete(User $user, Category $category): bool
+    {
+        return $user->hasRole('admin');
+    }
+}
