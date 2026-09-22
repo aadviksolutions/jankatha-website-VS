@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a1829"/>
+      <stop offset="50%" stop-color="#10243e"/>
+      <stop offset="100%" stop-color="#162e4e"/>
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff6b3d"/>
+      <stop offset="100%" stop-color="#ef542d"/>
+    </linearGradient>
+    <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse">
+      <path d="M 30 0 L 0 0 0 30" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
+    </pattern>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="500" fill="url(#bg)"/>
+  <rect width="800" height="500" fill="url(#grid)"/>
+
+  <!-- Subtle Newspaper Graphic -->
+  <g transform="translate(340, 140)" opacity="0.15">
+    <rect x="0" y="0" width="120" height="150" rx="6" fill="#ffffff"/>
+    <rect x="15" y="15" width="90" height="40" rx="3" fill="#0a1829"/>
+    <rect x="15" y="68" width="90" height="6" rx="3" fill="#0a1829"/>
+    <rect x="15" y="82" width="60" height="6" rx="3" fill="#0a1829"/>
+    <rect x="15" y="96" width="75" height="6" rx="3" fill="#0a1829"/>
+    <rect x="15" y="110" width="85" height="6" rx="3" fill="#0a1829"/>
+    <rect x="15" y="124" width="45" height="6" rx="3" fill="#0a1829"/>
+  </g>
+
+  <!-- Brand Typography -->
+  <g transform="translate(400, 260)" text-anchor="middle">
+    <!-- Logo -->
+    <text y="0" font-family="'Newsreader', Georgia, serif" font-weight="700" font-size="46" letter-spacing="-0.5">
+      <tspan fill="url(#accentGrad)">J</tspan><tspan fill="#ffffff">ankatha</tspan><tspan fill="url(#accentGrad)">.</tspan><tspan fill="#ffffff">com</tspan>
+    </text>
+
+    <!-- Tagline -->
+    <text y="32" font-family="'DM Sans', system-ui, -apple-system, sans-serif" font-size="11" font-weight="700" fill="#8ca0b8" letter-spacing="4">
+      REAL STORIES. REAL PEOPLE.
+    </text>
+
+    <!-- Newsroom badge -->
+    <rect x="-70" y="55" width="140" height="24" rx="12" fill="rgba(239, 84, 45, 0.15)" stroke="rgba(239, 84, 45, 0.4)" stroke-width="1"/>
+    <text y="71" font-family="'DM Sans', system-ui, sans-serif" font-size="10" font-weight="600" fill="#ff7c59" letter-spacing="1.5">
+      NEWS DESK
+    </text>
+  </g>
+</svg>

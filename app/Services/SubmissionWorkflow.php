@@ -23,11 +23,11 @@ class SubmissionWorkflow
         'rejected' => [],
     ];
 
-    public function createPending(CitizenSubmission $submission, User $user): void
+    public function createPending(CitizenSubmission $submission, ?User $user = null): void
     {
         SubmissionStatusHistory::create([
             'submission_id' => $submission->id,
-            'user_id' => $user->id,
+            'user_id' => $user?->id,
             'old_status' => null,
             'new_status' => 'pending',
             'note' => 'Submission received.',
@@ -48,6 +48,7 @@ class SubmissionWorkflow
 
             if ($newStatus === 'published') {
                 $this->publish($submission, $user, $note);
+
                 return $submission->refresh();
             }
 

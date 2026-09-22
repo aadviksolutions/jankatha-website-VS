@@ -12,7 +12,7 @@
     <label>Short description <textarea name="short_description">{{ old('short_description', $news->short_description) }}</textarea></label>
     <label>Full content <textarea name="content" rows="12" required>{{ old('content', $news->content) }}</textarea></label>
     <label>Featured image <input type="file" name="featured_image" accept="image/jpeg,image/png,image/webp"></label>
-    @if ($news->featured_image)<p><img src="{{ asset('storage/'.$news->featured_image) }}" alt="" width="180"></p>@endif
+    @if ($news->featured_image)<p><img src="{{ $news->display_image }}" alt="" width="180" onerror="this.onerror=null;this.src='{{ asset('images/placeholder.svg') }}';"></p>@endif
     <label>Location <input type="text" name="location" value="{{ old('location', $news->location) }}"></label>
     <label>District <input type="text" name="district" value="{{ old('district', $news->district) }}"></label>
     <label>State <input type="text" name="state" value="{{ old('state', $news->state) }}"></label>

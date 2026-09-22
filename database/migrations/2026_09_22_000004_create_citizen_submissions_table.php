@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('citizen_submissions', function (Blueprint $table): void {
             $table->id();
-            $table->foreignId('user_id')->constrained('users')->restrictOnDelete();
+            $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignId('category_id')->constrained('categories')->restrictOnDelete();
             $table->string('headline');
             $table->longText('description');

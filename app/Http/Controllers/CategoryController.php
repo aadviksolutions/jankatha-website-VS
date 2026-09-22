@@ -25,7 +25,7 @@ class CategoryController extends Controller
     {
         $this->authorize('create', Category::class);
 
-        return view('admin.categories.form', ['category' => new Category()]);
+        return view('admin.categories.form', ['category' => new Category]);
     }
 
     public function store(Request $request): RedirectResponse

@@ -1,0 +1,82 @@
+# ====================================================================
+# Stage 1: Build Frontend Assets with Node
+# ====================================================================
+FROM node:20-alpine AS frontend
+WORKDIR /app
+
+# Install Node dependencies
+COPY package*.json ./
+RUN npm ci --ignore-scripts
+
+# Copy assets and configuration for Vite compilation
+COPY vite.config.js ./
+COPY resources ./resources
+COPY public ./public
+RUN npm run build
+
+# ====================================================================
+# Stage 2: Install PHP Production Dependencies with Composer
+# ====================================================================
+FROM composer:2 AS composer
+WORKDIR /app
+
+COPY composer.json composer.lock ./
+RUN composer install \
+    --no-dev \
+    --no-interaction \
+    --prefer-dist \
+    --optimize-autoloader \
+    --no-scripts
+
+# ====================================================================
+# Stage 3: Production FrankenPHP Application Runner
+# ====================================================================
+FROM dunglas/frankenphp:1-php8.3-alpine AS runner
+
+# Install essential PHP extensions for Laravel 13
+RUN install-php-extensions \
+    pdo_mysql \
+    bcmath \
+    pcntl \
+    opcache \
+    intl \
+    zip
+
+# Production PHP settings
+ENV PHP_INI_DATE_TIMEZONE="UTC" \
+    PHP_INI_MEMORY_LIMIT="256M" \
+    PHP_INI_MAX_EXECUTION_TIME="60" \
+    PHP_INI_OPCACHE_ENABLE="1" \
+    PHP_INI_OPCACHE_VALIDATE_TIMESTAMPS="0"
+
+WORKDIR /app
+
+# Copy application source code
+COPY . .
+
+# Copy production vendor from Composer stage
+COPY --from=composer /app/vendor ./vendor
+
+# Copy compiled frontend assets from Node stage
+COPY --from=frontend /app/public/build ./public/build
+
+# Copy Caddy configuration for Vercel dynamic $PORT
+COPY Caddyfile /etc/caddy/Caddyfile
+
+# Ensure required storage and cache directories exist with correct permissions
+RUN mkdir -p \
+    storage/framework/cache/data \
+    storage/framework/sessions \
+    storage/framework/views \
+    storage/framework/testing \
+    storage/logs \
+    storage/app/public \
+    bootstrap/cache \
+    && php artisan package:discover --ansi \
+    && php artisan storage:link \
+    && chown -R www-data:www-data storage bootstrap/cache public/storage \
+    && chmod -R 775 storage bootstrap/cache
+
+EXPOSE 80
+
+CMD ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile"]

@@ -6,14 +6,11 @@ use App\Models\CitizenSubmission;
 use App\Services\SubmissionWorkflow;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class SubmissionModerationController extends Controller
 {
-    public function __construct(private readonly SubmissionWorkflow $workflow)
-    {
-    }
+    public function __construct(private readonly SubmissionWorkflow $workflow) {}
 
     public function index(Request $request): View
     {

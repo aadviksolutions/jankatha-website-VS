@@ -149,6 +149,21 @@ class PublicNewsController extends Controller
         return $this->page('public.static', ['pageTitle' => 'Contact Jankatha', 'pageKey' => 'contact', 'seoTitle' => 'Contact Jankatha.com']);
     }
 
+    public function privacyPolicy(): View
+    {
+        return $this->page('public.static', ['pageTitle' => 'Privacy Policy', 'pageKey' => 'privacy', 'seoTitle' => 'Privacy Policy | Jankatha.com']);
+    }
+
+    public function terms(): View
+    {
+        return $this->page('public.static', ['pageTitle' => 'Terms & Conditions', 'pageKey' => 'terms', 'seoTitle' => 'Terms & Conditions | Jankatha.com']);
+    }
+
+    public function disclaimer(): View
+    {
+        return $this->page('public.static', ['pageTitle' => 'Editorial Disclaimer', 'pageKey' => 'disclaimer', 'seoTitle' => 'Editorial Disclaimer | Jankatha.com']);
+    }
+
     public function submitNews()
     {
         if (auth()->check() && auth()->user()->hasRole('citizen', 'contributor')) {

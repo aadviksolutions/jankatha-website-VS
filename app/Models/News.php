@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class News extends Model
@@ -65,5 +67,40 @@ class News extends Model
     public function publishedSubmission(): HasOne
     {
         return $this->hasOne(CitizenSubmission::class, 'published_news_id');
+    }
+
+    public function tagsRelation(): BelongsToMany
+    {
+        return $this->belongsToMany(Tag::class, 'news_tags');
+    }
+
+    public function comments(): HasMany
+    {
+        return $this->hasMany(Comment::class);
+    }
+
+    public function getFeaturedImageUrlAttribute(): ?string
+    {
+        if (empty($this->featured_image)) {
+            return null;
+        }
+
+        $image = trim($this->featured_image);
+
+        if (str_starts_with($image, 'http://') || str_starts_with($image, 'https://') || str_starts_with($image, '//')) {
+            return $image;
+        }
+
+        $clean = ltrim($image, '/');
+        if (str_starts_with($clean, 'storage/')) {
+            $clean = substr($clean, 8);
+        }
+
+        return asset('storage/'.$clean);
+    }
+
+    public function getDisplayImageAttribute(): string
+    {
+        return $this->featured_image_url ?: asset('images/placeholder.svg');
     }
 }

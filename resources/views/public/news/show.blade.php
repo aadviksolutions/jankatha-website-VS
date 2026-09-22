@@ -1,7 +1,7 @@
 @extends('public.layout')
 @section('content')
 <article class="article-wrap"><header class="article-header"><div class="eyebrow"><span>{{ $news->category?->name ?? 'News' }}</span>@if($news->is_breaking)<span>Breaking</span>@endif</div><h1>{{ $news->headline }}</h1><p class="article-dek">{{ $news->short_description }}</p><div class="article-meta"><span>By {{ $news->author?->name ?? 'Jankatha Desk' }}</span><time datetime="{{ $news->published_at?->toIso8601String() }}">{{ $news->published_at?->format('d M Y, h:i A') }}</time>@if($news->location)<span>{{ collect([$news->location,$news->district,$news->state])->filter()->join(' · ') }}</span>@endif</div></header>
-@if($news->featured_image)<img class="article-image" src="{{ str_starts_with($news->featured_image, 'http') || str_starts_with($news->featured_image, '/') ? $news->featured_image : asset('storage/'.$news->featured_image) }}" alt="{{ $news->headline }}" loading="eager">@endif
+<img class="article-image" src="{{ $news->display_image }}" alt="{{ $news->headline }}" loading="eager" onerror="this.onerror=null;this.src='{{ asset('images/placeholder.svg') }}';">
 @if($safeVideoUrl)<div class="article-media"><p class="section-kicker">VIDEO REPORT</p>@if(str_starts_with($safeVideoUrl, '/storage/'))<video class="article-video" controls preload="metadata"><source src="{{ $safeVideoUrl }}"></video>@else<iframe class="article-video" src="{{ $safeVideoUrl }}" title="{{ $news->headline }}" loading="lazy" allowfullscreen></iframe>@endif</div>@endif
 <div class="article-content">{!! $news->content !!}</div>
 @if($news->tags)<div class="tag-list">@foreach(explode(',', $news->tags) as $tag)<span class="tag">#{{ trim($tag) }}</span>@endforeach</div>@endif

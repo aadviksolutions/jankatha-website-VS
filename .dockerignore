@@ -1,0 +1,16 @@
+.git
+.github
+.claude
+.vscode
+.env
+.env.*
+!.env.example
+node_modules
+vendor
+tests
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+storage/framework/testing/*
+storage/logs/*
+npm-debug.log

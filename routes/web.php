@@ -2,11 +2,11 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\CitizenSubmissionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\NewsController;
-use App\Http\Controllers\CitizenSubmissionController;
-use App\Http\Controllers\SubmissionModerationController;
 use App\Http\Controllers\PublicNewsController;
+use App\Http\Controllers\SubmissionModerationController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [PublicNewsController::class, 'home'])->name('home');
@@ -20,7 +20,13 @@ Route::get('/breaking-news', [PublicNewsController::class, 'breaking'])->name('b
 Route::get('/search', [PublicNewsController::class, 'search'])->name('search');
 Route::get('/about', [PublicNewsController::class, 'about'])->name('about');
 Route::get('/contact', [PublicNewsController::class, 'contact'])->name('contact');
-Route::get('/submit-news', [PublicNewsController::class, 'submitNews'])->name('submit-news');
+Route::get('/privacy-policy', [PublicNewsController::class, 'privacyPolicy'])->name('privacy-policy');
+Route::get('/terms', [PublicNewsController::class, 'terms'])->name('terms');
+Route::get('/disclaimer', [PublicNewsController::class, 'disclaimer'])->name('disclaimer');
+
+Route::get('/submit-news', [CitizenSubmissionController::class, 'createPublic'])->name('submit-news');
+Route::post('/submit-news', [CitizenSubmissionController::class, 'storePublic'])->middleware('throttle:5,1')->name('submit-news.store');
+Route::get('/submit-news/success/{submission}', [CitizenSubmissionController::class, 'success'])->name('submit-news.success');
 
 Route::middleware('guest')->group(function (): void {
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');

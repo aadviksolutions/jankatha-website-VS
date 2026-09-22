@@ -17,7 +17,22 @@
     </style>
 </head>
 <body>
-<header><a href="{{ route('dashboard') }}"><strong>Jankatha</strong></a><nav><a href="{{ route('my-submissions.index') }}">मेरी खबरें</a><a href="{{ route('dashboard') }}">डैशबोर्ड</a><form method="POST" action="{{ route('logout') }}">@csrf<button type="submit">Logout</button></form></nav></header>
+<header>
+    <a href="{{ route('home') }}" style="text-decoration: none;">
+        <strong style="font-size: 1.25rem;"><span style="color:var(--accent);">J</span>ankatha.com</strong>
+    </a>
+    <nav>
+        <a href="{{ route('home') }}">होमपेज</a>
+        @auth
+            <a href="{{ route('my-submissions.index') }}">मेरी खबरें</a>
+            <a href="{{ route('dashboard') }}">डैशबोर्ड</a>
+            <form method="POST" action="{{ route('logout') }}" style="display:inline;">@csrf<button type="submit" style="padding:0.4rem 0.8rem; font-size:0.9rem;">Logout</button></form>
+        @else
+            <a href="{{ route('login') }}" class="button secondary" style="padding:0.4rem 0.8rem; font-size:0.9rem;">लॉगिन</a>
+            <a href="{{ route('register') }}" class="button" style="padding:0.4rem 0.8rem; font-size:0.9rem;">रजिस्टर</a>
+        @endauth
+    </nav>
+</header>
 <main>
 @if (session('status'))<p class="notice" role="status">{{ session('status') }}</p>@endif
 @if ($errors->any())<div class="notice" role="alert"><strong>कृपया जानकारी जांचें।</strong><ul>@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif

@@ -8,15 +8,12 @@ use App\Services\SubmissionWorkflow;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class CitizenSubmissionController extends Controller
 {
-    public function __construct(private readonly SubmissionWorkflow $workflow)
-    {
-    }
+    public function __construct(private readonly SubmissionWorkflow $workflow) {}
 
     public function index(Request $request): View
     {
@@ -37,12 +34,50 @@ class CitizenSubmissionController extends Controller
         ]);
     }
 
+    public function createPublic(): View
+    {
+        return view('submissions.form', [
+            'submission' => new CitizenSubmission,
+            'categories' => Category::query()->where('status', 'active')->orderBy('sort_order')->orderBy('name')->get(),
+        ]);
+    }
+
+    public function storePublic(Request $request): RedirectResponse
+    {
+        $validated = $this->validated($request);
+
+        $submission = DB::transaction(function () use ($request, $validated): CitizenSubmission {
+            $user = $request->user();
+            $submission = CitizenSubmission::create([
+                ...$validated,
+                'user_id' => $user?->id,
+                'consent_at' => now(),
+                'status' => 'pending',
+            ]);
+            $this->storeMedia($request, $submission);
+            $this->workflow->createPending($submission, $user);
+
+            return $submission;
+        });
+
+        if ($request->user()) {
+            return redirect()->route('my-submissions.show', $submission)->with('status', 'आपकी खबर समीक्षा के लिए भेज दी गई है।');
+        }
+
+        return redirect()->route('submit-news.success', $submission)->with('status', 'आपकी खबर समीक्षा के लिए भेज दी गई है।');
+    }
+
+    public function success(CitizenSubmission $submission): View
+    {
+        return view('submissions.success', compact('submission'));
+    }
+
     public function create(): View
     {
         $this->authorize('create', CitizenSubmission::class);
 
         return view('submissions.form', [
-            'submission' => new CitizenSubmission(),
+            'submission' => new CitizenSubmission,
             'categories' => Category::query()->where('status', 'active')->orderBy('sort_order')->orderBy('name')->get(),
         ]);
     }
