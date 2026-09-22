@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Support\Str;
-use Pdo\Mysql;
 
 return [
 
@@ -17,7 +16,7 @@ return [
     |
     */
 
-    'default' => env('DB_CONNECTION', 'sqlite'),
+    'default' => env('DB_CONNECTION', env('TIDB_HOST') ? 'mysql' : 'sqlite'),
 
     /*
     |--------------------------------------------------------------------------
@@ -46,12 +45,12 @@ return [
 
         'mysql' => [
             'driver' => 'mysql',
-            'url' => env('DB_URL'),
-            'host' => env('DB_HOST', '127.0.0.1'),
-            'port' => env('DB_PORT', '3306'),
-            'database' => env('DB_DATABASE', 'laravel'),
-            'username' => env('DB_USERNAME', 'root'),
-            'password' => env('DB_PASSWORD', ''),
+            'url' => env('DB_URL') ?: env('TIDB_URL'),
+            'host' => env('DB_HOST') ?: env('TIDB_HOST') ?: '127.0.0.1',
+            'port' => env('DB_PORT') ?: env('TIDB_PORT') ?: '3306',
+            'database' => env('DB_DATABASE') ?: env('TIDB_DATABASE') ?: 'laravel',
+            'username' => env('DB_USERNAME') ?: env('TIDB_USER') ?: 'root',
+            'password' => (env('DB_PASSWORD') !== null && env('DB_PASSWORD') !== '') ? env('DB_PASSWORD') : env('TIDB_PASSWORD', ''),
             'unix_socket' => env('DB_SOCKET', ''),
             'charset' => env('DB_CHARSET', 'utf8mb4'),
             'collation' => env('DB_COLLATION', 'utf8mb4_unicode_ci'),
@@ -60,8 +59,9 @@ return [
             'strict' => true,
             'engine' => null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
-                Mysql::ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
-            ]) : [],
+                PDO::MYSQL_ATTR_SSL_CA => ($sslCa = env('MYSQL_ATTR_SSL_CA', env('DB_SSL_CA', env('TIDB_SSL_CA', (env('TIDB_HOST') || env('DB_SSL_REQUIRED', false)) && is_file('/etc/ssl/certs/ca-certificates.crt') ? '/etc/ssl/certs/ca-certificates.crt' : null)))),
+                PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => $sslCa ? env('MYSQL_ATTR_SSL_VERIFY_SERVER_CERT', true) : null,
+            ], fn ($value) => $value !== null) : [],
         ],
 
         'mariadb' => [
@@ -80,7 +80,7 @@ return [
             'strict' => true,
             'engine' => null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
-                Mysql::ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],
 
