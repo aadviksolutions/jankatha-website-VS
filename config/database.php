@@ -45,7 +45,7 @@ return [
 
         'mysql' => [
             'driver' => 'mysql',
-            'url' => env('DB_URL') ?: env('TIDB_URL'),
+            'url' => env('DB_URL'),
             'host' => env('DB_HOST') ?: env('TIDB_HOST') ?: '127.0.0.1',
             'port' => env('DB_PORT') ?: env('TIDB_PORT') ?: '3306',
             'database' => env('DB_DATABASE') ?: env('TIDB_DATABASE') ?: 'laravel',
@@ -59,7 +59,7 @@ return [
             'strict' => true,
             'engine' => null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
-                PDO::MYSQL_ATTR_SSL_CA => ($sslCa = env('MYSQL_ATTR_SSL_CA', env('DB_SSL_CA', env('TIDB_SSL_CA', (env('TIDB_HOST') || env('DB_SSL_REQUIRED', false)) && is_file('/etc/ssl/certs/ca-certificates.crt') ? '/etc/ssl/certs/ca-certificates.crt' : null)))),
+                PDO::MYSQL_ATTR_SSL_CA => ($sslCa = env('MYSQL_ATTR_SSL_CA', env('DB_SSL_CA', env('TIDB_SSL_CA', (env('TIDB_HOST') || env('DB_SSL_REQUIRED', false)) ? '/etc/ssl/cert.pem' : null)))),
                 PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => $sslCa ? env('MYSQL_ATTR_SSL_VERIFY_SERVER_CERT', true) : null,
             ], fn ($value) => $value !== null) : [],
         ],
