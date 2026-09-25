@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Str;
+use Pdo\Mysql;
 
 return [
 
@@ -59,8 +60,8 @@ return [
             'strict' => true,
             'engine' => null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
-                PDO::MYSQL_ATTR_SSL_CA => ($sslCa = env('MYSQL_ATTR_SSL_CA', env('DB_SSL_CA', env('TIDB_SSL_CA', (env('TIDB_HOST') || env('DB_SSL_REQUIRED', false)) ? '/etc/ssl/cert.pem' : null)))),
-                PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => $sslCa ? env('MYSQL_ATTR_SSL_VERIFY_SERVER_CERT', true) : null,
+                (defined('Pdo\Mysql::ATTR_SSL_CA') ? Mysql::ATTR_SSL_CA : (defined('PDO::MYSQL_ATTR_SSL_CA') ? PDO::MYSQL_ATTR_SSL_CA : 1009)) => ($sslCa = env('MYSQL_ATTR_SSL_CA', env('DB_SSL_CA', env('TIDB_SSL_CA', (env('TIDB_HOST') || env('DB_SSL_REQUIRED', false)) ? '/etc/ssl/cert.pem' : null)))),
+                (defined('Pdo\Mysql::ATTR_SSL_VERIFY_SERVER_CERT') ? Mysql::ATTR_SSL_VERIFY_SERVER_CERT : (defined('PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT') ? PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT : 1014)) => $sslCa ? env('MYSQL_ATTR_SSL_VERIFY_SERVER_CERT', true) : null,
             ], fn ($value) => $value !== null) : [],
         ],
 
@@ -80,7 +81,7 @@ return [
             'strict' => true,
             'engine' => null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
-                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+                (defined('Pdo\Mysql::ATTR_SSL_CA') ? Mysql::ATTR_SSL_CA : (defined('PDO::MYSQL_ATTR_SSL_CA') ? PDO::MYSQL_ATTR_SSL_CA : 1009)) => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],
 

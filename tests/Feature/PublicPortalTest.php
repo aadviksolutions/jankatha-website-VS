@@ -123,7 +123,7 @@ class PublicPortalTest extends TestCase
             'email' => 'suresh@example.com',
             'consent' => '1',
             'photos' => [
-                UploadedFile::fake()->image('leak.jpg', 640, 480),
+                UploadedFile::fake()->create('leak.jpg', 100, 'image/jpeg'),
             ],
         ];
 

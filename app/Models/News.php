@@ -19,6 +19,12 @@ class News extends Model
     protected $fillable = [
         'category_id',
         'author_id',
+        'source_id',
+        'source_name',
+        'source_url',
+        'source_guid',
+        'content_hash',
+        'is_auto_fetched',
         'headline',
         'slug',
         'short_description',
@@ -26,6 +32,8 @@ class News extends Model
         'featured_image',
         'location',
         'district',
+        'city',
+        'locality',
         'state',
         'tags',
         'video_url',
@@ -35,6 +43,7 @@ class News extends Model
         'published_at',
         'seo_title',
         'seo_description',
+        'attribution_text',
     ];
 
     protected function casts(): array
@@ -42,6 +51,7 @@ class News extends Model
         return [
             'is_breaking' => 'boolean',
             'is_featured' => 'boolean',
+            'is_auto_fetched' => 'boolean',
             'published_at' => 'datetime',
         ];
     }
@@ -52,6 +62,21 @@ class News extends Model
             ->where(function (Builder $query): void {
                 $query->whereNull('published_at')->orWhere('published_at', '<=', now());
             });
+    }
+
+    public function scopePendingReview(Builder $query): Builder
+    {
+        return $query->where('status', 'pending_review');
+    }
+
+    public function scopeAutoFetched(Builder $query): Builder
+    {
+        return $query->where('is_auto_fetched', true);
+    }
+
+    public function source(): BelongsTo
+    {
+        return $this->belongsTo(NewsSource::class, 'source_id');
     }
 
     public function category(): BelongsTo

@@ -38,7 +38,7 @@ class NewsImageUploadTest extends TestCase
     {
         Storage::fake('public');
 
-        $image = UploadedFile::fake()->image('ground_report.jpg', 1200, 800);
+        $image = UploadedFile::fake()->create('ground_report.jpg', 200, 'image/jpeg');
 
         $payload = [
             'headline' => 'रायपुर में नए फ्लाईओवर का लोकार्पण',

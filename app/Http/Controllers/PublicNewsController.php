@@ -6,6 +6,7 @@ use App\Models\Category;
 use App\Models\News;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -21,14 +22,31 @@ class PublicNewsController extends Controller
         return $this->page('public.home', [
             'hero' => $hero,
             'latest' => $latest,
+            'topStories' => (clone $query)->latest('published_at')->limit(5)->get(),
             'categories' => $this->activeCategories(),
+            'breakingNews' => (clone $query)->where('is_breaking', true)->latest('published_at')->limit(6)->get(),
+            'chhattisgarhNews' => $this->byCategoryOrLocation(['chhattisgarh'], 'state', 'Chhattisgarh', 4),
+            'raipurNews' => $this->byCategoryOrLocation(['raipur'], 'district', 'Raipur', 4),
             'localNews' => $this->localQuery()->limit(6)->get(),
+            'indiaNews' => $this->byCategoryOrLocation(['india', 'bharat', 'desh'], null, null, 4),
+            'worldNews' => $this->byCategoryOrLocation(['world', 'videsh', 'international'], null, null, 4),
+            'businessNews' => $this->byCategoryOrLocation(['business', 'vyapar', 'market'], null, null, 4),
+            'sportsNews' => $this->byCategoryOrLocation(['sports', 'khel'], null, null, 4),
+            'entertainmentNews' => $this->byCategoryOrLocation(['entertainment', 'manoranjan'], null, null, 4),
             'videoNews' => $this->videoQuery()->limit(4)->get(),
             'photoNews' => (clone $query)->whereNotNull('featured_image')->latest('published_at')->limit(6)->get(),
-            'breakingNews' => (clone $query)->where('is_breaking', true)->latest('published_at')->limit(5)->get(),
             'seoTitle' => 'Jankatha.com | Real Stories. Real People.',
             'seoDescription' => 'Jankatha brings trusted local, regional and citizen-driven news from Chhattisgarh and beyond.',
         ]);
+    }
+
+    public function sitemap(): Response
+    {
+        $news = News::query()->published()->latest('published_at')->limit(500)->get();
+        $categories = Category::query()->where('status', 'active')->get();
+
+        return response()->view('public.sitemap', compact('news', 'categories'))
+            ->header('Content-Type', 'application/xml; charset=utf-8');
     }
 
     public function news(): View
@@ -177,7 +195,24 @@ class PublicNewsController extends Controller
     {
         return News::query()
             ->published()
-            ->with(['category', 'author', 'publishedSubmission.media']);
+            ->with(['category', 'author', 'source', 'publishedSubmission.media']);
+    }
+
+    private function byCategoryOrLocation(array $slugs, ?string $column = null, ?string $value = null, int $limit = 4): Collection
+    {
+        return $this->publishedQuery()
+            ->where(function (Builder $query) use ($slugs, $column, $value): void {
+                $query->whereHas('category', function (Builder $catQuery) use ($slugs): void {
+                    $catQuery->whereIn('slug', $slugs);
+                });
+
+                if ($column && $value) {
+                    $query->orWhere($column, $value);
+                }
+            })
+            ->latest('published_at')
+            ->limit($limit)
+            ->get();
     }
 
     private function localQuery(): Builder

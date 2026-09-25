@@ -11,9 +11,10 @@ class CategorySeeder extends Seeder
     public function run(): void
     {
         $categories = [
-            'Breaking News', 'Chhattisgarh', 'Raipur', 'Bhilai', 'Durg', 'Bilaspur',
-            'Politics', 'Crime', 'Education', 'Business', 'Sports', 'Entertainment',
-            'Technology', 'Health', 'Lifestyle', 'Photo News', 'Video News',
+            'Breaking News', 'Chhattisgarh', 'Raipur', 'Bilaspur', 'Durg', 'Bhilai',
+            'Korba', 'Bastar', 'India', 'World', 'Politics', 'Business', 'Crime',
+            'Education', 'Health', 'Sports', 'Technology', 'Entertainment',
+            'Lifestyle', 'Photo News', 'Video News',
         ];
 
         foreach ($categories as $sortOrder => $name) {

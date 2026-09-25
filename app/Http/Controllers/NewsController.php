@@ -18,13 +18,15 @@ class NewsController extends Controller
     {
         $this->authorize('viewAny', News::class);
 
-        $news = News::query()->with(['category', 'author'])
+        $news = News::query()->with(['category', 'author', 'source'])
             ->when($request->filled('search'), fn ($query) => $query->where(function ($query) use ($request): void {
                 $search = $request->string('search')->toString();
                 $query->where('headline', 'like', "%{$search}%")->orWhere('short_description', 'like', "%{$search}%");
             }))
             ->when($request->filled('category_id'), fn ($query) => $query->where('category_id', $request->integer('category_id')))
             ->when($request->filled('status'), fn ($query) => $query->where('status', $request->string('status')->toString()))
+            ->when($request->filled('is_auto_fetched'), fn ($query) => $query->where('is_auto_fetched', $request->boolean('is_auto_fetched')))
+            ->when($request->filled('is_breaking'), fn ($query) => $query->where('is_breaking', $request->boolean('is_breaking')))
             ->latest()
             ->paginate(15)
             ->withQueryString();
@@ -32,6 +34,14 @@ class NewsController extends Controller
         return view('admin.news.index', [
             'news' => $news,
             'categories' => Category::query()->orderBy('name')->get(),
+            'counts' => [
+                'all' => News::count(),
+                'pending' => News::where('status', 'pending_review')->count(),
+                'published' => News::where('status', 'published')->count(),
+                'draft' => News::where('status', 'draft')->count(),
+                'scheduled' => News::where('status', 'scheduled')->count(),
+                'auto' => News::where('is_auto_fetched', true)->count(),
+            ],
         ]);
     }
 
@@ -86,7 +96,7 @@ class NewsController extends Controller
         $this->normalizePublication($validated);
 
         if ($request->hasFile('featured_image')) {
-            if ($news->featured_image) {
+            if ($news->featured_image && ! Str::startsWith($news->featured_image, ['http://', 'https://'])) {
                 Storage::disk('public')->delete($news->featured_image);
             }
             $validated['featured_image'] = $this->storeImage($request);
@@ -101,22 +111,34 @@ class NewsController extends Controller
     {
         $this->authorize('publish', $news);
         $validated = $request->validate([
-            'status' => ['required', Rule::in(['draft', 'scheduled', 'published', 'archived'])],
+            'status' => ['required', Rule::in(['draft', 'scheduled', 'published', 'archived', 'pending_review'])],
         ]);
 
         $news->update([
             'status' => $validated['status'],
-            'published_at' => $validated['status'] === 'published' ? now() : ($validated['status'] === 'scheduled' ? $news->published_at : null),
+            'published_at' => $validated['status'] === 'published' ? ($news->published_at ?: now()) : ($validated['status'] === 'scheduled' ? $news->published_at : null),
         ]);
 
-        return back()->with('status', 'News status updated.');
+        return back()->with('status', 'News status updated to '.$validated['status'].'.');
+    }
+
+    public function toggleBreaking(News $news): RedirectResponse
+    {
+        $this->authorize('update', $news);
+        $news->update([
+            'is_breaking' => ! $news->is_breaking,
+        ]);
+
+        $statusText = $news->is_breaking ? 'marked as Breaking News' : 'removed from Breaking News';
+
+        return back()->with('status', "Article {$statusText}.");
     }
 
     public function destroy(News $news): RedirectResponse
     {
         $this->authorize('delete', $news);
 
-        if ($news->featured_image) {
+        if ($news->featured_image && ! Str::startsWith($news->featured_image, ['http://', 'https://'])) {
             Storage::disk('public')->delete($news->featured_image);
         }
         $news->delete();
@@ -126,7 +148,7 @@ class NewsController extends Controller
 
     private function validated(Request $request): array
     {
-        return $request->validate([
+        $validated = $request->validate([
             'category_id' => ['required', 'integer', 'exists:categories,id'],
             'headline' => ['required', 'string', 'max:255'],
             'short_description' => ['nullable', 'string', 'max:5000'],
@@ -134,15 +156,20 @@ class NewsController extends Controller
             'featured_image' => ['nullable', 'file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
             'location' => ['nullable', 'string', 'max:255'],
             'district' => ['nullable', 'string', 'max:255'],
+            'city' => ['nullable', 'string', 'max:255'],
+            'locality' => ['nullable', 'string', 'max:255'],
             'state' => ['nullable', 'string', 'max:255'],
             'tags' => ['nullable', 'string', 'max:1000'],
             'video_url' => ['nullable', 'url', 'max:2048'],
-            'status' => ['required', Rule::in(['draft', 'scheduled', 'published', 'archived'])],
+            'status' => ['required', Rule::in(['draft', 'scheduled', 'published', 'archived', 'pending_review'])],
             'is_breaking' => ['nullable', 'boolean'],
             'is_featured' => ['nullable', 'boolean'],
             'published_at' => ['nullable', 'date'],
             'seo_title' => ['nullable', 'string', 'max:255'],
             'seo_description' => ['nullable', 'string', 'max:5000'],
+            'source_name' => ['nullable', 'string', 'max:255'],
+            'source_url' => ['nullable', 'url', 'max:2048'],
+            'attribution_text' => ['nullable', 'string', 'max:1000'],
         ]);
 
         if ($validated['status'] === 'scheduled' && (empty($validated['published_at']) || now()->gte($validated['published_at']))) {
@@ -150,6 +177,8 @@ class NewsController extends Controller
                 'published_at' => 'Scheduled news must have a future publish date and time.',
             ]);
         }
+
+        return $validated;
     }
 
     private function uniqueSlug(string $headline, ?News $news = null): string
